@@ -1,0 +1,29 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+    </div>
+    <div class="row">
+        <RadzenHtmlEditor @bind-Value="@Answer" Style="width: 100%; min-height: 400px;"/>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}
