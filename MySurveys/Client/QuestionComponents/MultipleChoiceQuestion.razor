@@ -1,0 +1,48 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+    </div>
+    <div class="row" style="padding-left: 2em">
+        <RadzenCheckBoxList @bind-Value="@ieAnswer" TValue="string" Orientation="Orientation.Vertical">
+            <Items>
+                @for (int i = 0; i < Choices.Count(); i++)
+                {
+                    <RadzenCheckBoxListItem Text="@Choices.ElementAt((Index)i)" Value="@i.ToString()" />
+                }
+            </Items>
+        </RadzenCheckBoxList>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private IEnumerable<string> _answer;
+    private string tmpAnswer;
+    private IEnumerable<string> ieAnswer 
+    {
+        get => _answer;
+        set
+        {
+            _answer = value;
+            Answer = string.Join(";", value);
+        }
+    }
+    [Parameter]
+    public string Answer
+    {
+        get => tmpAnswer;
+        set
+        {
+            if (value == tmpAnswer) return;
+            tmpAnswer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}

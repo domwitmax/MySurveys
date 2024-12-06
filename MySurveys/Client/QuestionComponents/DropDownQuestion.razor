@@ -1,0 +1,31 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+    </div>
+    <div class="row">
+        <RadzenDropDown @bind-Value=Answer Data=@Choices Style="width: 100%; max-width: 400px;" Name="DropDownBindValue" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}

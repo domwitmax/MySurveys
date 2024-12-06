@@ -1,16 +1,9 @@
 ﻿<div class="container">
     <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
     </div>
-    <div class="row" style="padding-left: 2em">
-        <RadzenCheckBoxList @bind-Value="@ieAnswer" TValue="string" Orientation="Orientation.Vertical">
-            <Items>
-                @for (int i = 0; i < Choices.Length; i++)
-                {
-                    <RadzenCheckBoxListItem Text="@Choices[i]" Value="@i.ToString()" />
-                }
-            </Items>
-        </RadzenCheckBoxList>
+    <div class="row">
+        <RadzenListBox @bind-Value=@ieAnswer Data=@Choices Multiple=true AllowClear=true Placeholder="Wybierz wszystkie"/>
     </div>
 </div>
 
@@ -20,10 +13,10 @@
     [Parameter]
     public int QuestionId { get; set; }
     [Parameter]
-    public string[] Choices { get; set; }
+    public IEnumerable<string> Choices { get; set; }
     private IEnumerable<string> _answer;
     private string tmpAnswer;
-    private IEnumerable<string> ieAnswer 
+    private IEnumerable<string> ieAnswer
     {
         get => _answer;
         set

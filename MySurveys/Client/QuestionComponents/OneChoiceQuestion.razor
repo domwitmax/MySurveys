@@ -1,0 +1,38 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+    </div>
+    <div class="row" style="padding-left: 2em">
+        <RadzenRadioButtonList @bind-Value="@Answer" TValue="string" Orientation="Orientation.Vertical">
+            <Items>
+                @for (int i = 0; i < Choices.Count(); i++)
+                {
+                    <RadzenRadioButtonListItem Text="@Choices.ElementAt((Index)i)" Value="@i.ToString()" />
+                }
+            </Items>
+        </RadzenRadioButtonList>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}
