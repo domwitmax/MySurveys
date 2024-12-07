@@ -1,0 +1,65 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+    </div>
+    <div class="row">
+        @foreach(var choice in choices)
+        {
+            <div class="row">
+                <div class="col-2" style="display: block; text-align: center;">
+                    <RadzenText Text="@choice.Value" />
+                </div>
+                <div class="col-10" style="display: block; text-align: center;">
+                    <RadzenSelectBar @bind-Value=@_answer[choice.Key] TValue="int">
+                        <Items>
+                            <RadzenSelectBarItem Text="Bardzo zadowolony" Value="1" />
+                            <RadzenSelectBarItem Text="Zadowolony" Value="2" />
+                            <RadzenSelectBarItem Text="Nie mam zdania" Value="3" />
+                            <RadzenSelectBarItem Text="Niezadowolony" Value="4" />
+                            <RadzenSelectBarItem Text="Bardzo niezadowolony" Value="5" />
+                        </Items>
+                    </RadzenSelectBar>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    public Dictionary<int, string> choices { get; set; }
+    private ObservableCollection<int> _answer;
+    private string tmpAnswer;
+    [Parameter]
+    public string Answer
+    {
+        get => tmpAnswer;
+        set
+        {
+            if (value == tmpAnswer) return;
+            tmpAnswer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    private void changedPropertyHandler(object? sender, (int,int) e)
+    {
+        Answer = string.Join(";", ((ObservableCollection<int>)sender).List.ToArray());
+    }
+    protected override void OnInitialized()
+    {
+        this._answer = new ObservableCollection<int>(Choices.Count(),0);
+        this._answer.PropertyChanged += changedPropertyHandler;
+        choices = new Dictionary<int, string>();
+        for(int i=0; i<Choices.Count(); i++)
+        {
+            choices.Add(i, Choices.ElementAt(i));
+        }
+    }
+}
