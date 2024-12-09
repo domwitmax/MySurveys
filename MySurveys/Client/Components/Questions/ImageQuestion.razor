@@ -1,0 +1,39 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+    </div>
+    <div class="row">
+        <RadzenImage Path=@this.Path Style=@($"max-width: 100%; width: {ImageWidth}px; height: {ImageHeight}px;") AlternateText="url image"
+        Click="@((args) => {
+                  Answer = $"{args.OffsetX/(double)ImageWidth}:{args.OffsetY/(double)ImageHeight}";
+        })"/>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public string Path { get; set; }
+    [Parameter]
+    public int ImageWidth { get; set; }
+    [Parameter]
+    public int ImageHeight { get; set; }
+    private string _answer { get; set; }
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}

@@ -1,0 +1,75 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+    </div>
+    <div class="row">
+        <RadzenDropZoneContainer TItem="(int,string)" Data="@choices" ItemSelector="@ItemSelector" ItemRender="@OnItemRender"
+        Drop="@OnDrop" CanDrop="@CanDrop">
+            <ChildContent>
+                <RadzenDropZone></RadzenDropZone>
+            </ChildContent>
+            <Template>
+                <strong>@context.Item2</strong>
+            </Template>
+        </RadzenDropZoneContainer>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private List<(int,string)> choices { get; set; }
+    private IEnumerable<string> _answer;
+    private string tmpAnswer;
+    private IEnumerable<string> ieAnswer
+    {
+        get => _answer;
+        set
+        {
+            _answer = value;
+            Answer = string.Join(";", value);
+        }
+    }
+    [Parameter]
+    public string Answer
+    {
+        get => tmpAnswer;
+        set
+        {
+            if (value == tmpAnswer) return;
+            tmpAnswer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        choices = new List<(int,string)>();
+        for(int i=0; i<Choices.Count(); i++)
+        {
+            choices.Add((i, Choices.ElementAt(i)));
+        }
+    }
+
+    void OnItemRender(RadzenDropZoneItemRenderEventArgs<(int,string)> args)
+    {
+        args.Attributes["class"] = "rz-card rz-variant-filled";
+    }
+    Func<(int,string), RadzenDropZone<(int,string)>, bool> ItemSelector = (item, zone) => true;
+    Func<RadzenDropZoneItemEventArgs<(int,string)>, bool> CanDrop = request => true;
+    void OnDrop(RadzenDropZoneItemEventArgs<(int,string)> args)
+    {
+        if (args.ToItem.Item2 != null && args.ToItem.Item1 != args.Item.Item1)
+        {
+            choices.Remove(args.Item);
+            choices.Insert(choices.IndexOf(args.ToItem), args.Item);
+            Answer = string.Join(";", choices.Select(key => key.Item1));
+        }
+    }
+}

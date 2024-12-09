@@ -1,0 +1,53 @@
+﻿<div class="container">
+    <div class="row">
+        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+    </div>
+    <div class="row">
+        @foreach (var i in choices)
+        {
+            <p style="display: inline-block;float: left; width: auto;height: auto;padding: 0;">
+                <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@((args) => click_button(i.Key))">
+                    <RadzenIcon Icon="@i.Value" />
+                </RadzenButton>
+            </p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string QuestionText { get; set; }
+    [Parameter]
+    public int QuestionId { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    public Dictionary<int, string> choices { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    protected override void OnInitialized()
+    {
+        choices = new Dictionary<int, string>();
+        int i = 0;
+        foreach(string choice in Choices)
+        {
+            choices.Add(i, choice);
+            i++;
+        }
+    }
+    private void click_button(int value)
+    {
+        Answer = value.ToString();
+    }
+}
