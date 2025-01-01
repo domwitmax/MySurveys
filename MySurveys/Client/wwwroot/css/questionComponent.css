@@ -1,0 +1,26 @@
+﻿.containerQuestion {
+    border: 1px solid black;
+    margin-bottom: 2em;
+}
+.headerQuestion {
+    
+}
+.contentQuestion {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 2em;
+    padding-right: 2em;
+}
+.rowSelectBarItem{
+
+}
+.colHeaderSelectBarItem{
+    width: 30%;
+    display: inline-block;
+    float: left;
+}
+.colContentSelectBarItem{
+    width: 70%;
+    display: inline-block;
+    float: left;
+}

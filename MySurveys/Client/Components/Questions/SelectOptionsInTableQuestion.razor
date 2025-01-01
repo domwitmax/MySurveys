@@ -1,16 +1,16 @@
-﻿<div class="container">
-    <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
     </div>
-    <div class="row">
+    <div class="row contentQuestion">
         @foreach(var choice in choices)
         {
-            <div class="row">
-                <div class="col-2" style="display: block; text-align: center;">
+            <div class="row rowSelectBarItem">
+                <div class="colHeaderSelectBarItem">
                     <RadzenText Text="@choice.Value" />
                 </div>
-                <div class="col-10" style="display: block; text-align: center;">
-                    <RadzenSelectBar @bind-Value=@_answer[choice.Key] TValue="int">
+                <div class="colContentSelectBarItem">
+                    <RadzenSelectBar Size="ButtonSize.ExtraSmall" @bind-Value=@_selectedBarItems[choice.Key] TValue="int">
                         <Items>
                             <RadzenSelectBarItem Text="Bardzo zadowolony" Value="1" />
                             <RadzenSelectBarItem Text="Zadowolony" Value="2" />
@@ -27,22 +27,20 @@
 
 @code {
     [Parameter]
-    public string QuestionText { get; set; }
-    [Parameter]
-    public int QuestionId { get; set; }
+    public HeaderQuestion Header { get; set; }
     [Parameter]
     public IEnumerable<string> Choices { get; set; }
-    public Dictionary<int, string> choices { get; set; }
-    private ObservableCollection<int> _answer;
-    private string tmpAnswer;
+    private Dictionary<int, string> choices { get; set; }
+    private ObservableCollection<int> _selectedBarItems;
+    private string _answer;
     [Parameter]
     public string Answer
     {
-        get => tmpAnswer;
+        get => _answer;
         set
         {
-            if (value == tmpAnswer) return;
-            tmpAnswer = value;
+            if (value == _answer) return;
+            _answer = value;
             AnswerChanged.InvokeAsync(value);
         }
     }
@@ -54,12 +52,22 @@
     }
     protected override void OnInitialized()
     {
-        this._answer = new ObservableCollection<int>(Choices.Count(),0);
-        this._answer.PropertyChanged += changedPropertyHandler;
         choices = new Dictionary<int, string>();
         for(int i=0; i<Choices.Count(); i++)
         {
             choices.Add(i, Choices.ElementAt(i));
         }
+        if(_answer is not null)
+        {
+            _selectedBarItems = new ObservableCollection<int>(0, 0);
+            foreach (string item in _answer.Split(';'))
+            {
+                _selectedBarItems.List.Add(Convert.ToInt32(item));
+            }
+        }
+        else
+            _selectedBarItems = new ObservableCollection<int>(Choices.Count(), 0);
+        
+        _selectedBarItems.PropertyChanged += changedPropertyHandler;
     }
 }

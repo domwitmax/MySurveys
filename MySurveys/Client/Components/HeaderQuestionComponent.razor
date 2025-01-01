@@ -1,0 +1,10 @@
+﻿<RadzenText Text="@($"{Header.Id}. {Header.Title}")"/>
+@if(Header.HttpContent is not null)
+{
+    @((MarkupString)Header.HttpContent)
+}
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+}

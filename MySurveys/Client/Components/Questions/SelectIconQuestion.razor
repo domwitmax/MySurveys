@@ -1,12 +1,12 @@
-﻿<div class="container">
-    <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
     </div>
-    <div class="row">
+    <div class="row contentQuestion">
         @foreach (var i in choices)
         {
             <p style="display: inline-block;float: left; width: auto;height: auto;padding: 0;">
-                <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Base" Click="@((args) => click_button(i.Key))">
+                <RadzenButton Variant="Variant.Outlined" ButtonStyle="@(Answer == i.Key.ToString() ? ButtonStyle.Success : ButtonStyle.Base)" Click="@((args) => click_button(i.Key))">
                     <RadzenIcon Icon="@i.Value" />
                 </RadzenButton>
             </p>
@@ -16,9 +16,7 @@
 
 @code {
     [Parameter]
-    public string QuestionText { get; set; }
-    [Parameter]
-    public int QuestionId { get; set; }
+    public HeaderQuestion Header { get; set; }
     [Parameter]
     public IEnumerable<string> Choices { get; set; }
     public Dictionary<int, string> choices { get; set; }

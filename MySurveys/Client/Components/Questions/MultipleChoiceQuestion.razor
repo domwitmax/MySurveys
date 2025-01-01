@@ -1,9 +1,9 @@
-﻿<div class="container">
-    <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")" />
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
     </div>
-    <div class="row" style="padding-left: 2em">
-        <RadzenCheckBoxList @bind-Value="@ieAnswer" TValue="string" Orientation="Orientation.Vertical">
+    <div class="row contentQuestion">
+        <RadzenCheckBoxList @bind-Value="@selectedChoices" TValue="string" Orientation="Orientation.Vertical">
             <Items>
                 @for (int i = 0; i < Choices.Count(); i++)
                 {
@@ -16,33 +16,36 @@
 
 @code {
     [Parameter]
-    public string QuestionText { get; set; }
-    [Parameter]
-    public int QuestionId { get; set; }
+    public HeaderQuestion Header { get; set; }
     [Parameter]
     public IEnumerable<string> Choices { get; set; }
-    private IEnumerable<string> _answer;
-    private string tmpAnswer;
-    private IEnumerable<string> ieAnswer 
+    private IEnumerable<string> _selectedChoices;
+    private string _answer;
+    private IEnumerable<string> selectedChoices
     {
-        get => _answer;
+        get => _selectedChoices;
         set
         {
-            _answer = value;
+            _selectedChoices = value;
             Answer = string.Join(";", value);
         }
     }
     [Parameter]
     public string Answer
     {
-        get => tmpAnswer;
+        get => _answer;
         set
         {
-            if (value == tmpAnswer) return;
-            tmpAnswer = value;
+            if (value == _answer) return;
+            _answer = value;
             AnswerChanged.InvokeAsync(value);
         }
     }
     [Parameter]
     public EventCallback<string> AnswerChanged { get; set; }
+    protected override void OnParametersSet()
+    {
+        if (_answer is not null)
+            _selectedChoices = _answer.Split(';').AsEnumerable<string>();
+    }
 }

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MySurveys.Client;
 using Radzen;
+using System.Collections;
+using System.Collections.Generic;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

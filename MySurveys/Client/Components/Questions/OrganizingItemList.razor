@@ -1,10 +1,10 @@
-﻿<div class="container">
-    <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
     </div>
-    <div class="row">
+    <div class="row contentQuestion">
         <RadzenDropZoneContainer TItem="(int,string)" Data="@choices" ItemSelector="@ItemSelector" ItemRender="@OnItemRender"
-        Drop="@OnDrop" CanDrop="@CanDrop">
+                                 Drop="@OnDrop" CanDrop="@CanDrop">
             <ChildContent>
                 <RadzenDropZone></RadzenDropZone>
             </ChildContent>
@@ -17,31 +17,19 @@
 
 @code {
     [Parameter]
-    public string QuestionText { get; set; }
-    [Parameter]
-    public int QuestionId { get; set; }
+    public HeaderQuestion Header { get; set; }
     [Parameter]
     public IEnumerable<string> Choices { get; set; }
     private List<(int,string)> choices { get; set; }
-    private IEnumerable<string> _answer;
-    private string tmpAnswer;
-    private IEnumerable<string> ieAnswer
+    private string _answer;
+    [Parameter]
+    public string Answer
     {
         get => _answer;
         set
         {
+            if (value == _answer) return;
             _answer = value;
-            Answer = string.Join(";", value);
-        }
-    }
-    [Parameter]
-    public string Answer
-    {
-        get => tmpAnswer;
-        set
-        {
-            if (value == tmpAnswer) return;
-            tmpAnswer = value;
             AnswerChanged.InvokeAsync(value);
         }
     }
@@ -51,12 +39,20 @@
     protected override void OnInitialized()
     {
         choices = new List<(int,string)>();
+        if(_answer is not null)
+        {
+            int[] tab = _answer.Split(';').Select(item => Convert.ToInt32(item)).ToArray<int>();
+            for(int i=0; i<Choices.Count(); i++)
+            {
+                choices.Add((tab[i], Choices.ElementAt(tab[i])));
+            }
+            return;
+        }
         for(int i=0; i<Choices.Count(); i++)
         {
             choices.Add((i, Choices.ElementAt(i)));
         }
     }
-
     void OnItemRender(RadzenDropZoneItemRenderEventArgs<(int,string)> args)
     {
         args.Attributes["class"] = "rz-card rz-variant-filled";

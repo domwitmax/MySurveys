@@ -1,17 +1,15 @@
-﻿<div class="container">
-    <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
     </div>
-    <div class="row">
+    <div class="row contentQuestion">
         <RadzenRating @bind-Value="@Rating" Stars="5"/>
     </div>
 </div>
 
 @code {
     [Parameter]
-    public string QuestionText { get; set; }
-    [Parameter]
-    public int QuestionId { get; set; }
+    public HeaderQuestion Header { get; set; }
     private int _rating;
     public int Rating 
     {
@@ -37,4 +35,11 @@
     }
     [Parameter]
     public EventCallback<string> AnswerChanged { get; set; }
+    protected override void OnParametersSet()
+    {
+        if(_answer is not null)
+            _rating = Convert.ToInt32(_answer);
+        else
+            _rating = 0;
+    }
 }

@@ -1,21 +1,28 @@
-﻿<div class="container">
-    <div class="row">
-        <RadzenText Text="@($"{QuestionId}. {QuestionText}")"/>
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
     </div>
-    <div class="row">
-        <RadzenImage Path=@this.Path Style=@($"max-width: 100%; width: {ImageWidth}px; height: {ImageHeight}px;") AlternateText="url image"
-        Click="@((args) => {
-                  Answer = $"{args.OffsetX/(double)ImageWidth}:{args.OffsetY/(double)ImageHeight}";
-        })"/>
+    <div class="row contentQuestion imageQuestionContent">
+        <div style="max-width: 100%; position: relative; padding: 0;">
+            <RadzenImage Path=@this.Path Style=@($"max-width: 100%; width: {ImageWidth}px; height: {ImageHeight}px; border: 1px solid black;")
+            AlternateText="url image" Click="@((args) => {
+                  Answer = $"{args.OffsetX/(double)ImageWidth}:{args.OffsetY/(double)ImageHeight}";})" />
+            <div style="position: absolute;
+                    top: @(pointY)px;
+                    left: @(pointX)px;
+                    width: 5px;
+                    height: 5px;
+                    padding: 0;
+                    background-color: red;
+                    border-radius: 50%">
+            </div>
+        </div>
     </div>
 </div>
 
-
 @code {
     [Parameter]
-    public string QuestionText { get; set; }
-    [Parameter]
-    public int QuestionId { get; set; }
+    public HeaderQuestion Header { get; set; }
     [Parameter]
     public string Path { get; set; }
     [Parameter]
@@ -31,9 +38,14 @@
         {
             if (value == _answer) return;
             _answer = value;
+            double[] point = value.Split(':').Select(item => Convert.ToDouble(item)).ToArray<double>();
+            pointX = Convert.ToInt32(point[0]*ImageWidth);
+            pointY = Convert.ToInt32(point[1]*ImageHeight);
             AnswerChanged.InvokeAsync(value);
         }
     }
     [Parameter]
     public EventCallback<string> AnswerChanged { get; set; }
+    private int pointX = 0;
+    private int pointY = 0;
 }
