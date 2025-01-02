@@ -1,0 +1,45 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        <RadzenRating @bind-Value="@Rating" Stars="5"/>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    private int _rating;
+    public int Rating 
+    {
+        get => _rating;
+        set 
+        {
+            if (_rating == value) return;
+            _rating = value;
+            Answer = value.ToString();
+        }
+    }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    protected override void OnParametersSet()
+    {
+        if(_answer is not null)
+            _rating = Convert.ToInt32(_answer);
+        else
+            _rating = 0;
+    }
+}

@@ -1,0 +1,36 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        @foreach(int i in Enumerable.Range(1,10))
+        {
+            <p style="display: inline-block;float: left; width: auto;height: auto;padding: 0;">
+                <RadzenButton Variant="Variant.Outlined" ButtonStyle="@(Answer == i.ToString() ? ButtonStyle.Success : ButtonStyle.Base)" Text="@i.ToString()" Click="@((args) => click_button(i))" />
+            </p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    private void click_button(int value)
+    {
+        Answer = value.ToString();
+    }
+}

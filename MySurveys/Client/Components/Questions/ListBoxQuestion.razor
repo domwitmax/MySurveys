@@ -1,0 +1,57 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        <RadzenListBox @bind-Value=@selectedChoices Data=@Choices Multiple=true AllowClear=true Placeholder="Wybierz wszystkie"/>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private IEnumerable<string> _selectedChoices;
+    private string _answer;
+    private IEnumerable<string> selectedChoices
+    {
+        get => _selectedChoices;
+        set
+        {
+            _selectedChoices = value;
+            List<string> list = new List<string>();
+            int count=Choices.Count();
+            foreach(string item in value)
+            {
+                for(int i=0; i<count; i++)
+                {
+                    if(Choices.ElementAt(i) == item)
+                    {
+                        list.Add(i.ToString());
+                        break;
+                    }
+                }
+            }
+            Answer = string.Join(";", list);
+        }
+    }
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    protected override void OnParametersSet()
+    {
+        if(_answer is not null)
+            _selectedChoices = _answer.Split(';').Select(i => Choices.ElementAt(Convert.ToInt32(i))).AsEnumerable<string>();
+    }
+}

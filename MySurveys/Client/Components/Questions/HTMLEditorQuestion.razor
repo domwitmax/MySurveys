@@ -1,0 +1,27 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        <RadzenHtmlEditor @bind-Value="@Answer" Style="width: 100%; min-height: 400px;"/>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}

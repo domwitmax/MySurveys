@@ -1,0 +1,51 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        <RadzenCheckBoxList @bind-Value="@selectedChoices" TValue="string" Orientation="Orientation.Vertical">
+            <Items>
+                @for (int i = 0; i < Choices.Count(); i++)
+                {
+                    <RadzenCheckBoxListItem Text="@Choices.ElementAt((Index)i)" Value="@i.ToString()" />
+                }
+            </Items>
+        </RadzenCheckBoxList>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private IEnumerable<string> _selectedChoices;
+    private string _answer;
+    private IEnumerable<string> selectedChoices
+    {
+        get => _selectedChoices;
+        set
+        {
+            _selectedChoices = value;
+            Answer = string.Join(";", value);
+        }
+    }
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    protected override void OnParametersSet()
+    {
+        if (_answer is not null)
+            _selectedChoices = _answer.Split(';').AsEnumerable<string>();
+    }
+}

@@ -1,0 +1,71 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        <RadzenDropZoneContainer TItem="(int,string)" Data="@choices" ItemSelector="@ItemSelector" ItemRender="@OnItemRender"
+                                 Drop="@OnDrop" CanDrop="@CanDrop">
+            <ChildContent>
+                <RadzenDropZone></RadzenDropZone>
+            </ChildContent>
+            <Template>
+                <strong>@context.Item2</strong>
+            </Template>
+        </RadzenDropZoneContainer>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private List<(int,string)> choices { get; set; }
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        choices = new List<(int,string)>();
+        if(_answer is not null)
+        {
+            int[] tab = _answer.Split(';').Select(item => Convert.ToInt32(item)).ToArray<int>();
+            for(int i=0; i<Choices.Count(); i++)
+            {
+                choices.Add((tab[i], Choices.ElementAt(tab[i])));
+            }
+            return;
+        }
+        for(int i=0; i<Choices.Count(); i++)
+        {
+            choices.Add((i, Choices.ElementAt(i)));
+        }
+    }
+    void OnItemRender(RadzenDropZoneItemRenderEventArgs<(int,string)> args)
+    {
+        args.Attributes["class"] = "rz-card rz-variant-filled";
+    }
+    Func<(int,string), RadzenDropZone<(int,string)>, bool> ItemSelector = (item, zone) => true;
+    Func<RadzenDropZoneItemEventArgs<(int,string)>, bool> CanDrop = request => true;
+    void OnDrop(RadzenDropZoneItemEventArgs<(int,string)> args)
+    {
+        if (args.ToItem.Item2 != null && args.ToItem.Item1 != args.Item.Item1)
+        {
+            choices.Remove(args.Item);
+            choices.Insert(choices.IndexOf(args.ToItem), args.Item);
+            Answer = string.Join(";", choices.Select(key => key.Item1));
+        }
+    }
+}

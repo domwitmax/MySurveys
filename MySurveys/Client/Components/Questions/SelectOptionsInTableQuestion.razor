@@ -1,0 +1,73 @@
+﻿<div class="containerQuestion">
+    <div class="row headerQuestion">
+        <HeaderQuestionComponent Header="@Header"/>
+    </div>
+    <div class="row contentQuestion">
+        @foreach(var choice in choices)
+        {
+            <div class="row rowSelectBarItem">
+                <div class="colHeaderSelectBarItem">
+                    <RadzenText Text="@choice.Value" />
+                </div>
+                <div class="colContentSelectBarItem">
+                    <RadzenSelectBar Size="ButtonSize.ExtraSmall" @bind-Value=@_selectedBarItems[choice.Key] TValue="int">
+                        <Items>
+                            <RadzenSelectBarItem Text="Bardzo zadowolony" Value="1" />
+                            <RadzenSelectBarItem Text="Zadowolony" Value="2" />
+                            <RadzenSelectBarItem Text="Nie mam zdania" Value="3" />
+                            <RadzenSelectBarItem Text="Niezadowolony" Value="4" />
+                            <RadzenSelectBarItem Text="Bardzo niezadowolony" Value="5" />
+                        </Items>
+                    </RadzenSelectBar>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    [Parameter]
+    public IEnumerable<string> Choices { get; set; }
+    private Dictionary<int, string> choices { get; set; }
+    private ObservableCollection<int> _selectedBarItems;
+    private string _answer;
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+    private void changedPropertyHandler(object? sender, (int,int) e)
+    {
+        Answer = string.Join(";", ((ObservableCollection<int>)sender).List.ToArray());
+    }
+    protected override void OnInitialized()
+    {
+        choices = new Dictionary<int, string>();
+        for(int i=0; i<Choices.Count(); i++)
+        {
+            choices.Add(i, Choices.ElementAt(i));
+        }
+        if(_answer is not null)
+        {
+            _selectedBarItems = new ObservableCollection<int>(0, 0);
+            foreach (string item in _answer.Split(';'))
+            {
+                _selectedBarItems.List.Add(Convert.ToInt32(item));
+            }
+        }
+        else
+            _selectedBarItems = new ObservableCollection<int>(Choices.Count(), 0);
+        
+        _selectedBarItems.PropertyChanged += changedPropertyHandler;
+    }
+}
