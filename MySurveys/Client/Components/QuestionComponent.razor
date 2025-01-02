@@ -1,0 +1,65 @@
+﻿@switch (Options.Type)
+{
+    case QuestionEnum.OneLine:
+        <OneLineQuestion Header="@Header" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.MultipleLines:
+        <MultipleLinesQuestion Header="@Header" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.OneChoice:
+        <OneChoiceQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.MultipleChoice:
+        <MultipleChoiceQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.HTMLEditor:
+        <HTMLEditorQuestion Header="@Header" @bind-Answer="@Answer"/>
+        break;
+    case QuestionEnum.DropDown:
+        <DropDownQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.ListBox:
+        <ListBoxQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.Stars:
+        <StarsQuestion Header="@Header" @bind-Answer="@Answer"/>
+        break;
+    case QuestionEnum.SelectOptionsInTable:
+        <SelectOptionsInTableQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.Image:
+        <ImageQuestion Header="@Header" ImageWidth="@Options.ImageWidth.Value" ImageHeight="@Options.ImageHeight.Value" Path="@Options.Path" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.OrganizingItemList:
+        <OrganizingItemListQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer" />
+        break;
+    case QuestionEnum.SelectRatingScale10:
+        <SelectRatingScale10Question Header="@Header" @bind-Answer="@Answer"/>
+        break;
+    case QuestionEnum.SelectIcon:
+        <SelectIconQuestion Header="@Header" Choices="@Options.Choices" @bind-Answer="@Answer"/>
+        break;
+}
+
+@code {
+    [Parameter]
+    public QuestionEnum Type { get; set; }
+    [Parameter]
+    public HeaderQuestion Header { get; set; }
+    [Parameter]
+    public OptionQuestion Options { get; set; }
+    private string _answer { get; set; }
+    [Parameter]
+    public string Answer
+    {
+        get => _answer;
+        set 
+        {
+            if (value == _answer) return;
+            _answer = value;
+            AnswerChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string> AnswerChanged { get; set; }
+}
