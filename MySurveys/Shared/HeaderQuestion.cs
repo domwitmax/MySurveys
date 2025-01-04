@@ -2,9 +2,13 @@
 
 public class HeaderQuestion
 {
-    public readonly string Title;
-    public readonly int Id;
-    public readonly string? HttpContent;
+    public string Title { get; set; }
+    public int Id { get; set; }
+    public string? HttpContent { get; set; }
+    public HeaderQuestion()
+    {
+
+    }
     public HeaderQuestion(string title, int id)
     {
         Title = title;
