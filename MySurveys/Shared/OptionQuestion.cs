@@ -2,11 +2,15 @@
 
 public class OptionQuestion
 {
-    public readonly QuestionEnum Type;
-    public readonly IEnumerable<string>? Choices;
-    public readonly string? Path;
-    public readonly int? ImageWidth;
-    public readonly int? ImageHeight;
+    public QuestionEnum Type { get; set; }
+    public IEnumerable<string>? Choices { get; set; }
+    public string? Path { get; set; }
+    public int? ImageWidth { get; set; }
+    public int? ImageHeight { get; set; }
+    public OptionQuestion()
+    {
+
+    }
     public OptionQuestion(QuestionEnum type)
     {
         Type = type;

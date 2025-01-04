@@ -1,0 +1,52 @@
+﻿@page "/{id:int}"
+@inject ISurveysService surveysService
+
+@if(isLoading)
+{
+    <p style="text-align: center;">Ładowanie...</p>
+}
+else if(survey is not null)
+{
+    @foreach (int i in Enumerable.Range(0, count))
+    {
+        <QuestionComponent Header="@survey.Headers[i]" Options="@survey.Options[i]" @bind-Answer="@answers[i]" />
+    }
+    <RadzenButton Click="@sendSurvey">Wyślij Ankietę</RadzenButton>
+}
+else
+{
+    <h1 style="text-align: center;">Błąd wczytania ankiety</h1>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    private Survey? survey { get; set; }
+    private string[] answers;
+    private int count { get; set; } = 0;
+    private bool isLoading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            survey = await surveysService.GetSurveyAsync(id);
+            if (survey is not null)
+            {
+                answers = new string[survey.Headers.Length];
+                count = survey.Headers.Length;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{ex.GetType()}: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private async void sendSurvey()
+    {
+        await surveysService.SendAnswersAsync(id, answers);
+    }
+}
