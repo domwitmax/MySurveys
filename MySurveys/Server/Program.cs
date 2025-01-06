@@ -52,7 +52,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("api/survey/{id:int}",async ([FromRoute] int id) =>
+app.MapGet("api/survey/{id:int}",([FromRoute] int id) =>
 {
     Survey survey = new Survey();
     survey.Headers = new HeaderQuestion[]
@@ -93,7 +93,7 @@ app.MapGet("api/survey/{id:int}",async ([FromRoute] int id) =>
     };
     return Results.Json(survey);
 });
-app.MapPost("api/survey", async ([FromBody] SurveyAnswer answer) =>
+app.MapPost("api/survey", ([FromBody] SurveyAnswer answer) =>
 {
     return Results.Ok(answer.Id + " " + string.Join(" | ", answer.Answers));
 });

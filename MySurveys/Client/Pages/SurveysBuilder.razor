@@ -22,7 +22,7 @@ else
     [Parameter]
     public int id { get; set; }
     private Survey? survey { get; set; }
-    private string[] answers;
+    private string[] answers = new string[0];
     private int count { get; set; } = 0;
     private bool isLoading = true;
     protected override async Task OnInitializedAsync()
