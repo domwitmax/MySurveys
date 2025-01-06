@@ -1,4 +1,4 @@
-﻿namespace MySurveys.Shared;
+﻿namespace MySurveys.Shared.Models.Questions;
 
 public class Survey
 {
@@ -6,5 +6,5 @@ public class Survey
     public HeaderQuestion[] Headers { get; set; }
     public OptionQuestion[] Options { get; set; }
     public Survey()
-    {}
+    { }
 }

@@ -1,11 +1,13 @@
-using Microsoft.AspNetCore.ResponseCompression;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MySurveys.Server.Data;
+using MySurveys.Shared;
+using MySurveys.Shared.Models.Questions;
+using Microsoft.Extensions.DependencyInjection;
 
 using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
-using MySurveys.Shared;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,17 @@ builder.Services.Configure<HttpJsonOptions>(options =>
 {
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
 });
+
+builder.Services.AddDbContext<MySurveysDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+})
+    .AddEntityFrameworkStores<MySurveysDbContext>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -35,6 +48,9 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("api/survey/{id:int}",async ([FromRoute] int id) =>
 {
