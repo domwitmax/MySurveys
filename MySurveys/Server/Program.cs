@@ -6,14 +6,46 @@ using MySurveys.Server.Data;
 using MySurveys.Shared;
 using MySurveys.Shared.Models.Questions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 
 using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using MySurveys.Server.Interfaces.Services;
+using MySurveys.Server.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<HttpJsonOptions>(options =>
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opt =>
 {
-    options.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyAPI", Version = "v1" });
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "bearer"
+    });
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
 });
 
 builder.Services.AddDbContext<MySurveysDbContext>(options =>
@@ -27,15 +59,41 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
 })
     .AddEntityFrameworkStores<MySurveysDbContext>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme = "Bearer";
+    option.DefaultScheme = "Bearer";
+    option.DefaultChallengeScheme = "Bearer";
+}).AddJwtBearer(cfg =>
+{
+    cfg.RequireHttpsMetadata = false;
+    cfg.SaveToken = true;
+    cfg.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
+    };
+});
+
+builder.Services.Configure<HttpJsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+});
+
+builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+app.UseAuthentication();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPI v1"));
 }
 else
 {
@@ -46,11 +104,11 @@ else
 app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapRazorPages();
+app.MapControllers();
 
 app.MapGet("api/survey/{id:int}",([FromRoute] int id) =>
 {
@@ -97,9 +155,6 @@ app.MapPost("api/survey", ([FromBody] SurveyAnswer answer) =>
 {
     return Results.Ok(answer.Id + " " + string.Join(" | ", answer.Answers));
 });
-
-app.MapRazorPages();
-app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();

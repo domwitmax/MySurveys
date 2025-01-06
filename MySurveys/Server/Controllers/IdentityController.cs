@@ -16,7 +16,7 @@ public class IdentityController : ControllerBase
     {
         this.userService = userService;
     }
-    [HttpPost]
+    [HttpPost("Register")]
     [ProducesResponseType<RegisterResponse>(200)]
     [ProducesResponseType<RegisterResponse>(400)]
     public async Task<IActionResult> Register([FromBody] RegisterUser registerUser)
@@ -36,7 +36,7 @@ public class IdentityController : ControllerBase
             return BadRequest(new RegisterResponse() { Success = false, TokenJwt = null});
         }
     }
-    [HttpPost]
+    [HttpPost("Login")]
     [ProducesResponseType<LoginResponse>(200)]
     [ProducesResponseType<LoginResponse>(400)]
     public async Task<IActionResult> Login([FromBody] LoginUser loginUser)
@@ -56,7 +56,7 @@ public class IdentityController : ControllerBase
             return BadRequest(new LoginResponse() { Success = false, TokenJwt = null });
         }
     }
-    [HttpGet]
+    [HttpGet("GetUser")]
     [Authorize]
     [ProducesResponseType<UserResponse>(200)]
     [ProducesResponseType(401)]
@@ -70,7 +70,7 @@ public class IdentityController : ControllerBase
             return Unauthorized(new UserResponse() { UserId = null, UserName = null});
         return Ok(user);
     }
-    [HttpPost]
+    [HttpPost("UpdateUser")]
     [Authorize]
     [ProducesResponseType<UpdateUserResponse>(200)]
     [ProducesResponseType<UpdateUserResponse>(400)]
@@ -96,7 +96,7 @@ public class IdentityController : ControllerBase
             return BadRequest(new UpdateUserResponse() { Success = false, UserName = null });
         }
     }
-    [HttpPost]
+    [HttpPost("ChangePassword")]
     [Authorize]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -121,7 +121,7 @@ public class IdentityController : ControllerBase
             return BadRequest();
         }
     }
-    [HttpPost]
+    [HttpPost("DeleteUser")]
     [Authorize]
     [ProducesResponseType<DeleteUserResponse>(200)]
     [ProducesResponseType<DeleteUserResponse>(400)]

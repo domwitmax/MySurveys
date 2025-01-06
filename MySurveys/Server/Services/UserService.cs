@@ -11,12 +11,12 @@ namespace MySurveys.Server.Services;
 
 public class UserService : IUserService
 {
-    private readonly SignInManager<IdentityUser> signInManager;
+    //private readonly SignInManager<IdentityUser> signInManager;
     private readonly UserManager<IdentityUser> userManager;
     private readonly IConfiguration configuration;
-    public UserService(SignInManager<IdentityUser> signInManager, IConfiguration configuration, UserManager<IdentityUser> userManager)
+    public UserService(/*SignInManager<IdentityUser> signInManager, */IConfiguration configuration, UserManager<IdentityUser> userManager)
     {
-        this.signInManager = signInManager;
+        //this.signInManager = signInManager;
         this.userManager = userManager;
         this.configuration = configuration;
     }
@@ -68,13 +68,13 @@ public class UserService : IUserService
         {
             return new LoginResponse() { Success = false, TokenJwt = null };
         }
-        var result = await signInManager.CheckPasswordSignInAsync(user, login.Password, false);
-        if (result.Succeeded)
+        bool result = await userManager.CheckPasswordAsync(user, login.Password);
+        if (result)
         {
             return new LoginResponse()
             {
                 Success = true,
-                TokenJwt = null
+                TokenJwt = await GenerateJwtToken(user)
             };
         }
         else
@@ -125,15 +125,15 @@ public class UserService : IUserService
         if (user.UserName is null || configuration["Jwt:Key"] is null)
             return string.Empty;
         var userClaims = await userManager.GetClaimsAsync(user);
-        var roles = await userManager.GetRolesAsync(user);
+        //var roles = await userManager.GetRolesAsync(user);
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Name, user.UserName),
+            new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.NameIdentifier, user.Id)
         }
-        .Union(userClaims)
-        .Union(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        .Union(userClaims);
+        //.Union(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? string.Empty));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
