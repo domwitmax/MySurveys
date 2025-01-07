@@ -108,6 +108,8 @@ public class IdentityController : ControllerBase
             return Unauthorized();
         if (changePasswordUser.UserName is null || changePasswordUser.OldPassword is null || changePasswordUser.NewPassword is null)
             return BadRequest();
+        if (userName != changePasswordUser.UserName)
+            return Unauthorized();
         try
         {
             bool isSuccess = await userService.ChangePassword(changePasswordUser);
@@ -133,6 +135,8 @@ public class IdentityController : ControllerBase
             return Unauthorized(new DeleteUserResponse() { Success = false });
         if (deleteUser.UserName is null)
             return BadRequest(new DeleteUserResponse() { Success = false });
+        if (userName != deleteUser.UserName)
+            return Unauthorized();
         try
         {
             DeleteUserResponse? user = await userService.DeleteUser(deleteUser);

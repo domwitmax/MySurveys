@@ -1,20 +1,16 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MySurveys.Server.Data;
-using MySurveys.Shared;
-using MySurveys.Shared.Models.Questions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
+using MySurveys.Server.Data;
+using MySurveys.Server.Services;
+using MySurveys.Server.Interfaces.Services;
+using MySurveys.Shared.Models.Questions;
 
 using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using MySurveys.Server.Interfaces.Services;
-using MySurveys.Server.Services;
-using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
