@@ -11,12 +11,10 @@ namespace MySurveys.Server.Services;
 
 public class UserService : IUserService
 {
-    //private readonly SignInManager<IdentityUser> signInManager;
     private readonly UserManager<IdentityUser> userManager;
     private readonly IConfiguration configuration;
-    public UserService(/*SignInManager<IdentityUser> signInManager, */IConfiguration configuration, UserManager<IdentityUser> userManager)
+    public UserService(IConfiguration configuration, UserManager<IdentityUser> userManager)
     {
-        //this.signInManager = signInManager;
         this.userManager = userManager;
         this.configuration = configuration;
     }
