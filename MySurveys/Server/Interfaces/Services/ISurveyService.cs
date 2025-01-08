@@ -1,6 +1,5 @@
-﻿namespace MySurveys.Server.Interfaces.Services
+﻿namespace MySurveys.Server.Interfaces.Services;
+
+public interface ISurveyService
 {
-    public interface ISurveyService
-    {
-    }
 }

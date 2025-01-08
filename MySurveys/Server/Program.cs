@@ -11,6 +11,8 @@ using MySurveys.Server.Interfaces.Services;
 using MySurveys.Shared.Models.Questions;
 
 using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
+using MySurveys.Server.Interfaces.Repositores;
+using MySurveys.Server.Repositores;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,6 +80,8 @@ builder.Services.Configure<HttpJsonOptions>(options =>
 });
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISurveyService, SurveyService>();
+builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
 
 builder.Services.AddRazorPages();
 
