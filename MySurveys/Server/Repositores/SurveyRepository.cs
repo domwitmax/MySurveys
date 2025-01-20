@@ -3,7 +3,6 @@ using MySurveys.Server.Data.Entity;
 using MySurveys.Server.Data.Models;
 using MySurveys.Server.Interfaces.Repositores;
 using MySurveys.Shared.Models.Questions;
-using System.Collections.Immutable;
 
 namespace MySurveys.Server.Repositores;
 
@@ -96,7 +95,7 @@ public class SurveyRepository : ISurveyRepository
         foreach(QuestionEntity question in questions.ToArray())
         {
             HeaderQuestion questionQuestion = new HeaderQuestion();
-            questionQuestion.Id = question.Id;
+            questionQuestion.Id = question.QuestionId + 1;
             questionQuestion.Title = question.QuestionTitle;
             HtmlHeaderEntity? htmlHeader = mySurveysDbContext.HtmlHeaders.SingleOrDefault(item => item.Id == question.HtmlId);
             if (htmlHeader is not null)
@@ -120,7 +119,7 @@ public class SurveyRepository : ISurveyRepository
         }
         if (mySurveysDbContext.OptionChoices is null)
             return null;
-        var questionOptions = mySurveysDbContext.OptionChoices.Where(item => item.SurveyId == surveyId).GroupBy(item => item.QuestionId);
+        var questionOptions = mySurveysDbContext.OptionChoices.Where(item => item.SurveyId == surveyId).ToList().GroupBy(item => item.QuestionId).AsEnumerable();
         foreach (var group in questionOptions)
         {
             int? i = group.First().QuestionId;
@@ -133,14 +132,279 @@ public class SurveyRepository : ISurveyRepository
         survey.Options = optionQuestions.ToArray();
         return survey;
     }
-
-    public bool RemoveSurvey(Guid surveyId)
+    private bool updateQuestion(Survey survey, QuestionEntity question, int i)
     {
-        throw new NotImplementedException();
+        if (mySurveysDbContext.Question is null || mySurveysDbContext.HtmlHeaders is null || mySurveysDbContext.OptionImage is null || mySurveysDbContext.OptionChoices is null)
+            return false;
+        try
+        {
+            question.QuestionTitle = survey.Headers[i].Title;
+            if (question.HtmlId is not null)
+            {
+                HtmlHeaderEntity? htmlHeaderEntity = mySurveysDbContext.HtmlHeaders.SingleOrDefault(item => item.Id == question.HtmlId);
+                if (survey.Headers[i].HttpContent is null && htmlHeaderEntity is not null)
+                {
+                    mySurveysDbContext.HtmlHeaders.Remove(htmlHeaderEntity);
+                    question.HtmlId = null;
+                }
+                else if (survey.Headers[i].HttpContent is null && htmlHeaderEntity is null)
+                {
+                    question.HtmlId = null;
+                }
+                else if (survey.Headers[i].HttpContent is not null && htmlHeaderEntity is not null)
+                {
+                    htmlHeaderEntity.HtmlContent = survey.Headers[i].HttpContent ?? "";
+                    mySurveysDbContext.HtmlHeaders.Update(htmlHeaderEntity);
+                }
+                else if (survey.Headers[i].HttpContent is not null && htmlHeaderEntity is null)
+                {
+                    HtmlHeaderEntity htmlHeader = new HtmlHeaderEntity(survey.Headers[i].HttpContent ?? "");
+                    mySurveysDbContext.HtmlHeaders.Add(htmlHeader);
+                    mySurveysDbContext.SaveChanges();
+                    question.HtmlId = htmlHeader.Id;
+                }
+            }
+            else if (question.HtmlId is null && survey.Headers[i].HttpContent is not null)
+            {
+                HtmlHeaderEntity htmlHeaderEntity = new HtmlHeaderEntity(survey.Headers[i].HttpContent ?? "");
+                mySurveysDbContext.HtmlHeaders.Add(htmlHeaderEntity);
+                mySurveysDbContext.SaveChanges();
+                question.HtmlId = htmlHeaderEntity.Id;
+            }
+            if (question.ImageId is not null)
+            {
+                OptionImageEntity? optionImageEntity = mySurveysDbContext.OptionImage.SingleOrDefault(item => item.Id == question.ImageId);
+                if (survey.Options[i].Path is null && optionImageEntity is null)
+                {
+                    question.ImageId = null;
+                }
+                else if (survey.Options[i].Path is null && optionImageEntity is not null)
+                {
+                    mySurveysDbContext.OptionImage.Remove(optionImageEntity);
+                    mySurveysDbContext.SaveChanges();
+                    question.ImageId = null;
+                }
+                else if (survey.Options[i].Path is not null && optionImageEntity is not null)
+                {
+                    optionImageEntity.Path = survey.Options[i].Path ?? "";
+                    optionImageEntity.Width = survey.Options[i].ImageWidth ?? 0;
+                    optionImageEntity.Height = survey.Options[i].ImageHeight ?? 0;
+                    mySurveysDbContext.OptionImage.Update(optionImageEntity);
+                }
+                else if (survey.Options[i].Path is not null && optionImageEntity is null)
+                {
+                    optionImageEntity = new OptionImageEntity(survey.Options[i].Path ?? "", survey.Options[i].ImageWidth ?? 0, survey.Options[i].ImageHeight ?? 0);
+                    mySurveysDbContext.OptionImage.Add(optionImageEntity);
+                    mySurveysDbContext.SaveChanges();
+                    question.ImageId = optionImageEntity.Id;
+                }
+            }
+            OptionChoicesEntity[] optionChoicesEntities = mySurveysDbContext.OptionChoices.Where(item => item.SurveyId == survey.Id && item.QuestionId == question.QuestionId).ToArray();
+            if (optionChoicesEntities.Length == 0 && survey.Options[i].Choices is null)
+            {
+                mySurveysDbContext.OptionChoices.RemoveRange(optionChoicesEntities);
+                mySurveysDbContext.SaveChanges();
+            }
+            else if (optionChoicesEntities.Length == 0 && survey.Options[i].Choices is not null)
+            {
+                foreach (string choice in survey.Options[i].Choices ?? new string[] { })
+                {
+                    OptionChoicesEntity optionChoicesEntity = new OptionChoicesEntity(question.QuestionId, survey.Id, choice);
+                    mySurveysDbContext.OptionChoices.Add(optionChoicesEntity);
+                }
+                mySurveysDbContext.SaveChanges();
+            }
+            question.Type = survey.Options[i].Type;
+            mySurveysDbContext.Question.Update(question);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    private bool addQuestion(Survey survey, int i)
+    {
+        if (mySurveysDbContext.Question is null || mySurveysDbContext.HtmlHeaders is null || mySurveysDbContext.OptionImage is null || mySurveysDbContext.OptionChoices is null)
+            return false;
+        try
+        {
+            HtmlHeaderEntity? htmlHeaderEntity = null;
+            OptionImageEntity? optionImageEntity = null;
+
+            if (survey.Options[i].Path is not null && survey.Options[i].ImageWidth is not null && survey.Options[i].ImageHeight is not null)
+            {
+                optionImageEntity = new OptionImageEntity(survey.Options[i].Path ?? "", survey.Options[i].ImageWidth ?? 0, survey.Options[i].ImageHeight ?? 0);
+                mySurveysDbContext.OptionImage.Add(optionImageEntity);
+            }
+            if (survey.Headers[i].HttpContent is not null)
+            {
+                htmlHeaderEntity = new HtmlHeaderEntity(survey.Headers[i].HttpContent ?? "");
+                mySurveysDbContext.HtmlHeaders.Add(htmlHeaderEntity);
+            }
+            foreach (string option in survey.Options[i].Choices ?? Array.Empty<string>())
+            {
+                mySurveysDbContext.OptionChoices.Add(new OptionChoicesEntity(i + 1, survey.Id, option));
+            }
+            mySurveysDbContext.SaveChanges();
+            QuestionEntity questionEntity = new QuestionEntity(i + 1, survey.Id, survey.Headers[i].Title, null, null, survey.Options[i].Type);
+            if (htmlHeaderEntity is not null)
+            {
+                questionEntity.HtmlId = htmlHeaderEntity.Id;
+            }
+            if (optionImageEntity is not null)
+            {
+                questionEntity.ImageId = optionImageEntity.Id;
+            }
+            mySurveysDbContext.Question.Add(questionEntity);
+            mySurveysDbContext.SaveChanges();
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    private bool removeQuestion(int surveyId, int questionId)
+    {
+        try
+        {
+            if (mySurveysDbContext.Question is null || mySurveysDbContext.HtmlHeaders is null || mySurveysDbContext.OptionImage is null || mySurveysDbContext.OptionChoices is null)
+                return false;
+            OptionChoicesEntity[]? optionChoicesEntities = mySurveysDbContext.OptionChoices.Where(item => item.SurveyId == surveyId && item.QuestionId == questionId + 1).ToArray();
+            if (optionChoicesEntities is not null)
+                mySurveysDbContext.OptionChoices.RemoveRange(optionChoicesEntities);
+            QuestionEntity? questionEntity = mySurveysDbContext.Question.SingleOrDefault(item => item.SurveyId == surveyId && item.QuestionId == questionId);
+            if (questionEntity is null)
+                return false;
+            if (questionEntity.HtmlId is not null)
+            {
+                HtmlHeaderEntity? htmlHeaderEntity = mySurveysDbContext.HtmlHeaders.SingleOrDefault(item => item.Id == questionEntity.HtmlId);
+                if (htmlHeaderEntity is not null)
+                {
+                    mySurveysDbContext.HtmlHeaders.Remove(htmlHeaderEntity);
+                }
+            }
+            if (questionEntity.ImageId is not null)
+            {
+                OptionImageEntity? optionImageEntity = mySurveysDbContext.OptionImage.SingleOrDefault(item => item.Id == questionEntity.ImageId);
+                if (optionImageEntity is not null)
+                {
+                    mySurveysDbContext.OptionImage.Remove(optionImageEntity);
+                }
+            }
+            mySurveysDbContext.Question.Remove(questionEntity);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
-    public bool UpdateSurvey(Survey survey)
+    public bool UpdateSurvey(Survey survey, string userName)
     {
-        throw new NotImplementedException();
+        Survey? getSurvey = GetSurvey(survey.Id);
+        if(getSurvey is null)
+            return false;
+        if(mySurveysDbContext.Surveys is null)
+            return false;
+        SurveyEntity? surveyEntity = mySurveysDbContext.Surveys.SingleOrDefault(item => item.UserName == userName);
+        if(surveyEntity is null)
+            return false;
+        if(surveyEntity.Id != survey.Id)
+            return false;
+        if(mySurveysDbContext.Question is null)
+            return false;
+        try
+        {
+            if (survey.Headers.Length == getSurvey.Headers.Length)
+            {
+                QuestionEntity[] questions = mySurveysDbContext.Question.ToArray();
+                for (int i = 0; i < survey.Headers.Length; i++)
+                {
+                    if(!updateQuestion(survey, questions[i], i))
+                        return false;
+                }
+            }
+            else if(survey.Headers.Length > getSurvey.Headers.Length)
+            {
+                QuestionEntity[] questions = mySurveysDbContext.Question.ToArray();
+                int i = 0;
+                for(; i < getSurvey.Headers.Length; i++)
+                {
+                    if(!updateQuestion(survey, questions[i], i))
+                        return false;
+                }
+                for(; i < survey.Headers.Length; i++)
+                {
+                    if(!addQuestion(survey, i))
+                        return false;
+                }
+            }
+            else
+            {
+                QuestionEntity[] questions = mySurveysDbContext.Question.ToArray();
+                int i = 0;
+                for (; i < survey.Headers.Length; i++)
+                {
+                    if(!updateQuestion(survey, questions[i], i))
+                        return false;
+                }
+                for (; i < getSurvey.Headers.Length; i++)
+                {
+                    if(!removeQuestion(survey.Id, i))
+                        return false;
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public bool RemoveSurvey(int surveyId, string userName)
+    {
+        if (mySurveysDbContext.Surveys is null || mySurveysDbContext.Question is null || mySurveysDbContext.HtmlHeaders is null || mySurveysDbContext.OptionImage is null || mySurveysDbContext.OptionChoices is null)
+            return false;
+        try
+        {
+            SurveyEntity? surveyEntity = mySurveysDbContext.Surveys.SingleOrDefault(item => item.Id == surveyId);
+            if (surveyEntity is null)
+                return false;
+            if (surveyEntity.UserName != userName)
+                return false;
+            QuestionEntity[]? questionEntities = mySurveysDbContext.Question.Where(item => item.SurveyId == surveyId).ToArray();
+            if (questionEntities is null)
+                return false;
+            OptionChoicesEntity[]? optionChoicesEntities = mySurveysDbContext.OptionChoices.Where(item => item.SurveyId == surveyId).ToArray();
+            if (optionChoicesEntities is not null)
+                mySurveysDbContext.RemoveRange(optionChoicesEntities);
+            foreach (QuestionEntity questionEntity in questionEntities)
+            {
+                if (questionEntity.HtmlId is not null)
+                {
+                    HtmlHeaderEntity? htmlHeaderEntity = mySurveysDbContext.HtmlHeaders.SingleOrDefault(item => item.Id == questionEntity.HtmlId);
+                    if (htmlHeaderEntity is not null)
+                        mySurveysDbContext.Remove(htmlHeaderEntity);
+                }
+                if (questionEntity.ImageId is not null)
+                {
+                    OptionImageEntity? optionImageEntity = mySurveysDbContext.OptionImage.SingleOrDefault(item => item.Id == questionEntity.ImageId);
+                    if (optionImageEntity is not null)
+                        mySurveysDbContext.Remove(optionImageEntity);
+                }
+            }
+            mySurveysDbContext.Question.RemoveRange(questionEntities);
+            mySurveysDbContext.Surveys.Remove(surveyEntity);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
