@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MySurveys.Shared
+namespace MySurveys.Shared.Collections
 {
     public class ObservableCollection<T>
     {
@@ -13,7 +13,7 @@ namespace MySurveys.Shared
         public ObservableCollection(int size, T defaultValue)
         {
             List = new List<T>();
-            for(int i=0; i<size; i++)
+            for (int i = 0; i < size; i++)
             {
                 List.Add(defaultValue);
             }
@@ -24,7 +24,7 @@ namespace MySurveys.Shared
             set
             {
                 List[key] = value;
-                PropertyChanged.Invoke(this,(key, value));
+                PropertyChanged.Invoke(this, (key, value));
             }
         }
         public event EventHandler<(int, T)> PropertyChanged;

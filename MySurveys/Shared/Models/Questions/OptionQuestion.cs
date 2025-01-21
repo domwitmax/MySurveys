@@ -1,4 +1,4 @@
-﻿namespace MySurveys.Shared;
+﻿namespace MySurveys.Shared.Models.Questions;
 
 public class OptionQuestion
 {

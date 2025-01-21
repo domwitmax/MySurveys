@@ -1,5 +1,5 @@
 ﻿using MySurveys.Client.Interface.Service;
-using MySurveys.Shared;
+using MySurveys.Shared.Models.Questions;
 using System.Net.Http.Json;
 using System.Text.Json;
 

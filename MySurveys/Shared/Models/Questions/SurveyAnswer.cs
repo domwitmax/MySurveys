@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MySurveys.Shared;
+namespace MySurveys.Shared.Models.Questions;
 
 public class SurveyAnswer
 {

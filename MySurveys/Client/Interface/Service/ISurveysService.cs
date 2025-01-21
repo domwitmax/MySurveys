@@ -1,4 +1,4 @@
-﻿using MySurveys.Shared;
+﻿using MySurveys.Shared.Models.Questions;
 
 namespace MySurveys.Client.Interface.Service;
 

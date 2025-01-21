@@ -1,4 +1,4 @@
-﻿namespace MySurveys.Shared;
+﻿namespace MySurveys.Shared.Models.Questions;
 
 public class HeaderQuestion
 {
@@ -17,8 +17,8 @@ public class HeaderQuestion
     }
     public HeaderQuestion(string title, int id, string httpContent)
     {
-        Title = title; 
-        Id = id; 
+        Title = title;
+        Id = id;
         HttpContent = httpContent;
     }
 }
