@@ -19,7 +19,7 @@ public class UserServiceTest
         var services = new ServiceCollection();
 
         services.AddDbContext<MySurveysDbContext>(options =>
-            options.UseInMemoryDatabase("TestDb"));
+            options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString()));
 
         services.AddLogging();
 
@@ -78,12 +78,11 @@ public class UserServiceTest
         // Act
         var result = await service.Register(model);
         var claims = validateToken(result.TokenJwt);
+        string? userName = claims?.FindFirstValue(ClaimTypes.Name);
 
         // Assert
         Assert.NotNull(result);
         Assert.True(result.Success);
-        Assert.NotNull(claims);
-        string? userName = claims.FindFirstValue(ClaimTypes.Name);
         Assert.NotNull(userName);
         Assert.Equal(name, userName);
     }
@@ -137,11 +136,11 @@ public class UserServiceTest
         // Act
         var result = await service.Login(model);
         var claims = validateToken(result.TokenJwt);
+        string? userName = claims?.FindFirstValue(ClaimTypes.Name);
 
         // Assert
         Assert.True(result.Success);
         Assert.NotNull(claims);
-        string? userName = claims.FindFirstValue(ClaimTypes.Name);
         Assert.NotNull(userName);
         Assert.Equal(name, userName);
     }
@@ -271,13 +270,13 @@ public class UserServiceTest
         // Act
         var result = await service.ChangePassword(model);
         var loginResult = await service.Login(new LoginUser(name, newPassword));
+        var claims = validateToken(loginResult.TokenJwt);
+        string? userName = claims?.FindFirstValue(ClaimTypes.Name);
 
         // Assert
         Assert.True(result);
-        var claims = validateToken(loginResult.TokenJwt);
         Assert.True(loginResult.Success);
         Assert.NotNull(claims);
-        string? userName = claims.FindFirstValue(ClaimTypes.Name);
         Assert.NotNull(userName);
         Assert.Equal(name, userName);
     }
@@ -295,14 +294,14 @@ public class UserServiceTest
         // Act
         var result = await service.ChangePassword(model);
         var loginResult = await service.Login(new LoginUser(name, newPassword));
+        var claims = validateToken(loginResult.TokenJwt);
+        string? userName = claims?.FindFirstValue(ClaimTypes.Name);
 
         // Assert
         Assert.False(result);
         Assert.NotNull(loginResult);
-        var claims = validateToken(loginResult.TokenJwt);
         Assert.False(loginResult.Success);
         Assert.Null(claims);
-        string? userName = claims?.FindFirstValue(ClaimTypes.Name);
         Assert.Null(userName);
         Assert.NotEqual(name, userName);
     }

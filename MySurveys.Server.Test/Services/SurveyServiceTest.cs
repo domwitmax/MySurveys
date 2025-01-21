@@ -10,47 +10,12 @@ using MySurveys.Server.Services;
 using MySurveys.Shared.Models.Questions;
 using MySurveys.Shared.Models.Responses;
 using MySurveys.Shared.Models.Users;
-using System.Collections;
 
 namespace MySurveys.Server.Test.Services;
 
 public class SurveyServiceTest
 {
-    private ISurveyService? getService()
-    {
-        var services = new ServiceCollection();
-
-        services.AddDbContext<MySurveysDbContext>(options =>
-            options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString()));
-
-        services.AddLogging();
-
-        services.AddIdentity<IdentityUser, IdentityRole>()
-            .AddEntityFrameworkStores<MySurveysDbContext>()
-            .AddDefaultTokenProviders();
-
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ISurveyRepository, SurveyRepository>();
-        services.AddScoped<ISurveyService, SurveyService>();
-
-        IEnumerable<KeyValuePair<string, string?>> inMemorySettings = new List<KeyValuePair<string, string?>>()
-        {
-            new KeyValuePair<string, string?>("Jwt:Key", "f6c78dcd933913c2d20c3fc324a021a62b697d88a31c93d11baf0411f357cfa5"),
-            new KeyValuePair<string, string?>("Jwt:Issuer", "MySurvey")
-        };
-
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings)
-            .Build();
-
-        services.AddSingleton<IConfiguration>(configuration);
-
-        var serviceProvider = services.BuildServiceProvider();
-
-        ISurveyService? surveyService = serviceProvider.GetService<ISurveyService>();
-        return surveyService;
-    }
-    private (ISurveyService?, IUserService?) getServices()
+    private (ISurveyService?, IUserService?) getServices(bool giveBothService = true)
     {
         var services = new ServiceCollection();
 
@@ -83,7 +48,9 @@ public class SurveyServiceTest
 
         ISurveyService? surveyService = serviceProvider.GetService<ISurveyService>();
         IUserService? userService = serviceProvider.GetService<IUserService>();
-        return (surveyService, userService);
+        if(giveBothService)
+            return (surveyService, userService);
+        return (surveyService, null);
     }
     private bool isEqual(Survey? a, Survey? b)
     {
@@ -412,222 +379,314 @@ public class SurveyServiceTest
     [Fact]
     public void TestCheckSurveyCorrect()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getCorrectSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.True(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyNotEqual()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getNotEqualSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+        
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+        
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyEmptyHeader()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getEmptyHeaderSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyEmptyOptions()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getEmptyOptionsSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyEmptyHeaderAndOptions()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getEmptyHeaderAndOptionsSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+        
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyWrongOrderHeader()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getWrongOrderHeaderSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyEmptyHtmlContentHeader()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getEmptyHtmlContentSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestCheckSurveyWhiteSpacesHtmlContentHeader()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getWhiteSpacesHtmlContentSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+        
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+        
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestEmptyOrNullChoices()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getEmptyOrNullChoicesSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+        
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestAdditionalChoices()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getAdditionalChoicesSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestEmptyPath()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getEmptyPathSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestWrongPath()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getWrongPathSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestWrongSize()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getWrongSizeSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     [Fact]
     public void TestAdditionalPathAndSizeSurvey()
     {
-        ISurveyService? surveyService = getService();
-        Assert.NotNull(surveyService);
+        // Arrange
+        ISurveyService? surveyService = getServices(false).Item1;
         Survey survey = getAdditionalPathAndSizeSurvey();
-        bool isCorrect = surveyService.CheckSurvey(survey);
+
+        // Act
+        bool? isCorrect = surveyService?.CheckSurvey(survey);
+
+        // Assert
+        Assert.NotNull(isCorrect);
         Assert.False(isCorrect);
     }
     #endregion
+    #region AddSurvey
     [Fact]
     public async Task TestAddSurveryCorrectUserName()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
         string userName = "test";
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         RegisterUser registerUser = new RegisterUser(userName, "test2@W");
         Survey model = getCorrectSurvey();
 
-        RegisterResponse registerResponse = await userService.Register(registerUser);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? result = surveyService is not null ? await surveyService.AddSurvey(model, userName) : null;
+        
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
         Assert.True(registerResponse.Success);
-        int? result = await surveyService.AddSurvey(model, userName);
         Assert.NotNull(result);
         Assert.True(result > 0);
     }
     [Fact]
     public async Task TestAddSurveryWrongUserName()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
         string userName = "test";
         string wrongUserName = "wrongUserName";
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         RegisterUser registerUser = new RegisterUser(userName, "test2@W");
         Survey model = getCorrectSurvey();
 
-        RegisterResponse registerResponse = await userService.Register(registerUser);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? result = surveyService is not null ? await surveyService.AddSurvey(model, wrongUserName) : null;
+
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
         Assert.True(registerResponse.Success);
-        int? result = await surveyService.AddSurvey(model, wrongUserName);
         Assert.Null(result);
         Assert.False(result > 0);
     }
+    #endregion
     [Fact]
     public async Task TestGetSurvey()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         Survey testSurvey = getCorrectSurvey();
         string userName = "test";
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
-        Assert.True(registerResponse.Success);
-        int? surveyId = await surveyService.AddSurvey(testSurvey, userName);
-        Assert.NotNull(surveyId);
-        Survey? result = await surveyService.GetSurvey(surveyId ?? 0);
-        Assert.NotNull(result);
+
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(testSurvey, userName) : null;
+        Survey? result = surveyService is not null ? await surveyService.GetSurvey(surveyId ?? 0) : null;
         bool isEqualSurvey = isEqual(testSurvey, result);
+        
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
+        Assert.True(registerResponse.Success);
+        Assert.NotNull(surveyId);
+        Assert.NotNull(result);
         Assert.True(isEqualSurvey);
     }
     [Fact]
+    #region UpdateSurvey
     public async Task TestUpdateSurveyCorrectUserNameLessHeaders()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
-        Assert.True(registerResponse.Success);
         Survey primalSurvey = getCorrectSurvey();
         Survey newSurvey = getCorrectSurvey();
         newSurvey.Headers = newSurvey.Headers.Take(newSurvey.Headers.Length - 5).ToArray();
         newSurvey.Options = newSurvey.Options.Take(newSurvey.Options.Length - 5).ToArray();
 
-        int? surveyId = await surveyService.AddSurvey(primalSurvey, userName);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(primalSurvey, userName) : null;
+        newSurvey.Id = surveyId is not null ? surveyId.Value : 0;
+        bool? isSuccessUpdate = surveyService is not null ? await surveyService.UpdateSurvey(newSurvey, userName) : null;
+        
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
+        Assert.True(registerResponse.Success);
         Assert.NotNull(surveyId);
-        newSurvey.Id = surveyId.Value;
-        bool isSuccessUpdate = await surveyService.UpdateSurvey(newSurvey, userName);
+        Assert.NotNull(isSuccessUpdate);
         Assert.True(isSuccessUpdate);
     }
     [Fact]
     public async Task TestUpdateSurveyCorrectUserNameEqualHeaders()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
-        Assert.True(registerResponse.Success);
         Survey primalSurvey = getCorrectSurvey();
         Survey newSurvey = getCorrectSurvey();
         int questionId = newSurvey.Headers[0].Id;
@@ -643,24 +702,30 @@ public class SurveyServiceTest
         newSurvey.Headers[4].Id = questionId;
         newSurvey.Options[4] = newSurvey.Options[newSurvey.Options.Length - 1];
 
-        int? surveyId = await surveyService.AddSurvey(primalSurvey, userName);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(primalSurvey, userName) : null;
+        newSurvey.Id = surveyId is not null ? surveyId.Value : 0;
+        bool? isSuccessUpdate = surveyService is not null ? await surveyService.UpdateSurvey(newSurvey, userName) : null;
+
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
+        Assert.True(registerResponse.Success);
         Assert.NotNull(surveyId);
-        newSurvey.Id = surveyId.Value;
-        bool isSuccessUpdate = await surveyService.UpdateSurvey(newSurvey, userName);
+        Assert.NotNull(isSuccessUpdate);
         Assert.True(isSuccessUpdate);
     }
     [Fact]
     public async Task TestUpdateSurveyCorrectUserNameMoreHeaders()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
-        Assert.True(registerResponse.Success);
         Survey primalSurvey = getCorrectSurvey();
         Survey newSurvey = getCorrectSurvey();
         List<HeaderQuestion> headers = new List<HeaderQuestion>();
@@ -682,97 +747,131 @@ public class SurveyServiceTest
         newSurvey.Headers[newSurvey.Headers.Length - 2].Id = newSurvey.Headers.Length - 2;
         newSurvey.Headers[newSurvey.Headers.Length - 1].Id = newSurvey.Headers.Length - 1;
 
-        int? surveyId = await surveyService.AddSurvey(primalSurvey, userName);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(primalSurvey, userName) : null;
+        newSurvey.Id = surveyId is not null ? surveyId.Value : 0;
+        bool? isSuccessUpdate = surveyService is not null ? await surveyService.UpdateSurvey(newSurvey, userName) : null;
+        
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
+        Assert.True(registerResponse.Success);
         Assert.NotNull(surveyId);
-        newSurvey.Id = surveyId.Value;
-        bool isSuccessUpdate = await surveyService.UpdateSurvey(newSurvey, userName);
+        Assert.NotNull(isSuccessUpdate);
         Assert.True(isSuccessUpdate);
     }
     [Fact]
     public async Task TestUpdateSurveyWrongUserName()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         string wrongUserName = "wrongUserName";
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
-        Assert.True(registerResponse.Success);
         Survey primalSurvey = getCorrectSurvey();
         Survey newSurvey = getCorrectSurvey();
         newSurvey.Headers = newSurvey.Headers.Take(newSurvey.Headers.Length - 5).ToArray();
         newSurvey.Options = newSurvey.Options.Take(newSurvey.Headers.Length - 5).ToArray();
 
-        int? surveyId = await surveyService.AddSurvey(primalSurvey, userName);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(primalSurvey, userName) : null;
+        newSurvey.Id = surveyId is not null ? surveyId.Value : 0;
+        bool? isSuccessUpdate = surveyService is not null ? await surveyService.UpdateSurvey(newSurvey, wrongUserName) : null;
+
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
+        Assert.True(registerResponse.Success);
         Assert.NotNull(surveyId);
-        newSurvey.Id = surveyId.Value;
-        bool isSuccessUpdate = await surveyService.UpdateSurvey(newSurvey, wrongUserName);
+        Assert.NotNull(isSuccessUpdate);
         Assert.False(isSuccessUpdate);
     }
     [Fact]
     public async Task TestUpdateSurveyWrongId()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
-        Assert.True(registerResponse.Success);
         Survey primalSurvey = getCorrectSurvey();
         Survey newSurvey = getCorrectSurvey();
         newSurvey.Headers = newSurvey.Headers.Take(newSurvey.Headers.Length - 5).ToArray();
         newSurvey.Options = newSurvey.Options.Take(newSurvey.Headers.Length - 5).ToArray();
 
-        int? surveyId = await surveyService.AddSurvey(primalSurvey, userName);
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(primalSurvey, userName) : null;
+        bool? isSuccessUpdate = surveyService is not null ? await surveyService.UpdateSurvey(newSurvey, userName) : null;
+
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
+        Assert.True(registerResponse.Success);
         Assert.NotNull(surveyId);
-        bool isSuccessUpdate = await surveyService.UpdateSurvey(newSurvey, userName);
+        Assert.NotNull(isSuccessUpdate);
         Assert.False(isSuccessUpdate);
     }
     [Fact]
+    #endregion
+    #region DeleteSurvey
     public async Task TestDeleteSurveyCorrectUserName()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         Survey testSurvey = getCorrectSurvey();
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
+
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(testSurvey, userName) : null;
+        bool? isSuccessDeletedSurvey = surveyService is not null ? await surveyService.DeleteSurvey(surveyId.Value, userName) : null;
+
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
         Assert.True(registerResponse.Success);
-
-        int? surveyId = await surveyService.AddSurvey(testSurvey, userName);
         Assert.NotNull(surveyId);
-
-        bool isSuccessDeletedSurvey = await surveyService.DeleteSurvey(surveyId.Value, userName);
+        Assert.NotNull(isSuccessDeletedSurvey);
         Assert.True(isSuccessDeletedSurvey);
     }
     [Fact]
     public async Task TestDeleteSurveyWrongUserName()
     {
+        // Arrange
         var services = getServices();
         ISurveyService? surveyService = services.Item1;
         IUserService? userService = services.Item2;
-        Assert.NotNull(surveyService);
-        Assert.NotNull(userService);
         string userName = "test";
         string wrongUserName = "wrongUserName";
         Survey testSurvey = getCorrectSurvey();
         RegisterUser registerUser = new RegisterUser(userName, "string2@W");
-        RegisterResponse registerResponse = await userService.Register(registerUser);
+
+        // Act
+        RegisterResponse? registerResponse = userService is not null ? await userService.Register(registerUser) : null;
+        int? surveyId = surveyService is not null ? await surveyService.AddSurvey(testSurvey, userName) : null;
+        bool? isSuccessDeletedSurvey = surveyService is not null ? await surveyService.DeleteSurvey(surveyId ?? 0, wrongUserName) : null;
+
+        // Assert
+        Assert.NotNull(surveyService);
+        Assert.NotNull(userService);
+        Assert.NotNull(registerResponse);
         Assert.True(registerResponse.Success);
-
-        int? surveyId = await surveyService.AddSurvey(testSurvey, userName);
         Assert.NotNull(surveyId);
-
-        bool isSuccessDeletedSurvey = await surveyService.DeleteSurvey(surveyId.Value, wrongUserName);
+        Assert.NotNull(isSuccessDeletedSurvey);
         Assert.False(isSuccessDeletedSurvey);
     }
+    #endregion
 }
