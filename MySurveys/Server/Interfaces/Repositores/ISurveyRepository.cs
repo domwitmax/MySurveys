@@ -4,8 +4,8 @@ namespace MySurveys.Server.Interfaces.Repositores;
 
 public interface ISurveyRepository
 {
-    public int? AddSurvey(Survey survey, string userName);
-    public Survey? GetSurvey(int surveyId);
-    public bool UpdateSurvey(Survey survey, string userName);
-    public bool RemoveSurvey(int surveyId, string userName);
+    public Task<int?> AddSurvey(Survey survey, string userName);
+    public Task<Survey?> GetSurvey(int surveyId);
+    public Task<bool> UpdateSurvey(Survey survey, string userName);
+    public Task<bool> RemoveSurvey(int surveyId, string userName);
 }

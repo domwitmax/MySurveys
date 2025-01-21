@@ -2,7 +2,6 @@
 using MySurveys.Server.Interfaces.Services;
 using MySurveys.Shared.Models.Questions;
 using MySurveys.Shared.Models.Responses;
-using System;
 
 namespace MySurveys.Server.Services;
 
@@ -83,26 +82,24 @@ public class SurveyService : ISurveyService
         if (userResponse is null)
             return null;
 
-        return surveyRepository.AddSurvey(survey, userName);
+        return await surveyRepository.AddSurvey(survey, userName);
     }
-    public Survey? GetSurvey(int surveyId)
+    public async Task<Survey?> GetSurvey(int surveyId)
     {
-        return surveyRepository.GetSurvey(surveyId);
+        return await surveyRepository.GetSurvey(surveyId);
     }
-
     public async Task<bool> UpdateSurvey(Survey survey, string userName)
     {
         UserResponse? userResponse = await userService.GetUser(userName);
         if (userResponse is null)
             return false;
-        return surveyRepository.UpdateSurvey(survey, userName);
+        return await surveyRepository.UpdateSurvey(survey, userName);
     }
-
     public async Task<bool> DeleteSurvey(int surveyId, string userName)
     {
         UserResponse? userResponse = await userService.GetUser(userName);
         if (userResponse is null)
             return false;
-        return surveyRepository.RemoveSurvey(surveyId, userName);
+        return await surveyRepository.RemoveSurvey(surveyId, userName);
     }
 }

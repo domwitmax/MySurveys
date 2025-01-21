@@ -588,7 +588,7 @@ public class SurveyServiceTest
         Assert.True(registerResponse.Success);
         int? surveyId = await surveyService.AddSurvey(testSurvey, userName);
         Assert.NotNull(surveyId);
-        Survey? result = surveyService.GetSurvey(surveyId ?? 0);
+        Survey? result = await surveyService.GetSurvey(surveyId ?? 0);
         Assert.NotNull(result);
         bool isEqualSurvey = isEqual(testSurvey, result);
         Assert.True(isEqualSurvey);
