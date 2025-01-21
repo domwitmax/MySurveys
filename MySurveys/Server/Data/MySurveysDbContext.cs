@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MySurveys.Server.Data.Entity;
 using MySurveys.Server.Data.Models;
-using MySurveys.Shared.Models.Questions;
 
 namespace MySurveys.Server.Data
 {
@@ -14,6 +13,7 @@ namespace MySurveys.Server.Data
         public virtual DbSet<OptionImageEntity>? OptionImage { get; set; }
         public virtual DbSet<QuestionEntity>? Question { get; set; }
         public virtual DbSet<SurveyEntity>? Surveys { get; set; }
+        public virtual DbSet<AnswerEntity>? Answers { get; set; }
         public MySurveysDbContext(DbContextOptions<MySurveysDbContext> options) : base(options) {}
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -61,8 +61,15 @@ namespace MySurveys.Server.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
-
                 entity.Property(e => e.UserName).HasMaxLength(50).IsRequired();
+            });
+
+            builder.Entity<AnswerEntity>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SurveyId).IsRequired();
+                entity.Property(e => e.UserName).HasMaxLength(50);
+                entity.Property(e => e.Answers).HasMaxLength(2048).IsRequired();
             });
 
             base.OnModelCreating(builder);
