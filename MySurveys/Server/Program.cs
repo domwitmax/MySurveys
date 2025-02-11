@@ -82,6 +82,8 @@ builder.Services.Configure<HttpJsonOptions>(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
+builder.Services.AddScoped<IAnswersRepository, AnswersRepository>();
+builder.Services.AddScoped<IAnswersService, AnswerService>();
 
 builder.Services.AddRazorPages();
 
