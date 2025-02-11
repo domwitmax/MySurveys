@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySurveys.Server.Data;
 
@@ -11,9 +12,11 @@ using MySurveys.Server.Data;
 namespace MySurveys.Server.Migrations
 {
     [DbContext(typeof(MySurveysDbContext))]
-    partial class MySurveysDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250121155039_AddAnswers")]
+    partial class AddAnswers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
